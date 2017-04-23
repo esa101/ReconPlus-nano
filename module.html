@@ -1,0 +1,174 @@
+<div ng-controller="ReconController">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Who is stalking me</h3>
+                </div>
+                <div class="panel-body">
+                    <form class="form-horizontal">
+                        <span class="input-group-btn">
+                            <button type="submit" class="btn btn-default" ng-click="getConfigurationData()">Refresh</button>
+                            <button type="submit" class="btn btn-default pull-right" ng-click="deleteData()">Reset previous scan results</button>
+                        </span>
+                        <textarea class="form-control" rows="20" ng-model="configurationData" ng-model-options="{debounce: 1000}">
+                        </textarea>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-5">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Scan Settings</h3>
+                </div>
+                <div class="panel-body">
+                    <form class="form-inline" ng-submit="startScan()">
+                        <div class="form-group">
+                            <!-- <label class="radio-inline padding-left"><input type="radio" ng-model="scanType" value="0" ng-disabled="running">2.4GHz</label> -->
+                            <!-- <br /> -->
+                            <label class="checkbox-inline padding-left">
+                                <input type="checkbox" ng-model="continuous" ng-disabled="running">
+                                Continuous
+                            </label>
+                            <br>
+                            <select class="form-control padding-left" ng-model="scanDuration" ng-disabled="running">
+                                <option value="15">15 Seconds</option>
+                                <option value="30">30 Seconds</option>
+                                <option value="60">1 Minute</option>
+                                <option value="120">2 Minute</option>
+                                <option value="300">5 Minutes</option>
+                                <option value="600">10 Minutes</option>
+                            </select>
+
+                            <button type="submit" class="btn btn-default" ng-hide="running" ng-disabled="loading">
+                                Scan
+                            </button>
+                            <button type="button" class="btn btn-default" ng-click="stopScan()" ng-show="running">
+                                Stop
+                            </button>
+                            <img src="img/throbber.gif" ng-show="loading">
+
+                            <br/>
+                            <br/>
+
+                            <div class="progress" ng-show="running">
+                                <div class="progress-bar progress-bar-striped active" role="progressbar"
+                                     aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100"
+                                     style="width:{{ percent }}%">{{ percent }}%
+                                </div>
+                            </div>
+                            <div class="well well-sm alert-danger" ng-show="error">There was an error starting Recon.
+                                Please try again.
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        Scan Results
+                        <span ng-show="cached">(from cache)</span>
+                        <span class="dropdown">
+                            <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="reconDropdown"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="reconDropdown">
+                            <li ng-click="addAllSSIDS()"><a>Add all SSIDs to PineAP pool</a></li>
+                            </ul>
+                        </span>
+                        <span class="alert-success well-sm" ng-show="dropdownMessage">
+                            {{ dropdownMessage }}
+                        </span>
+                    </h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table" ng-hide="(accessPoints.length == 0)">
+                        <thead>
+                        <tr>
+                            <th class="autoselect">SSID</th>
+                            <th class="autoselect">MAC</th>
+                            <th>Security</th>
+                            <th>WPS</th>
+                            <th>Channel</th>
+                            <th>Signal</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat-start="accessPoint in accessPoints"
+                            ng-show="interfaceMacs.indexOf(accessPoint.bssid) == -1">
+                            <td class="autoselect">
+                                <span class="text-info" ng-hide="accessPoint.ssid"><i>Hidden</i></span>
+                                {{ accessPoint.ssid }}
+                                <hook-button hook="ssid" content="accessPoint.ssid"
+                                             deauth="{bssid: accessPoint.bssid, clients: accessPoint.clients, channel: accessPoint.channel}"></hook-button>
+                            </td>
+                            <td class="autoselect">
+                                {{ accessPoint.bssid }}
+                                <hook-button hook="mac" content="accessPoint.bssid"></hook-button>
+                            </td>
+                            <td>{{ accessPoint.encryption }}</td>
+                            <td>{{ (accessPoint.wps == 1) ? "yes" : "no" }}</td>
+                            <td>{{ accessPoint.channel }}</td>
+                            <td>{{ accessPoint.power }}</td>
+                        </tr>
+                        <tr ng-repeat="mac in accessPoint.clients" ng-repeat-end class="active"
+                            ng-show="interfaceMacs.indexOf(accessPoint.bssid) == -1">
+                            <td></td>
+                            <td class="autoselect">
+                                {{ mac }}
+                                <hook-button hook="mac" content="mac"
+                                             deauth="{bssid: accessPoint.bssid, channel: accessPoint.channel}"
+                                             probes="true"></hook-button>
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="panel-body" ng-show="(accessPoints.length === 0)">
+                    No scan results.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" ng-hide="(unassociatedClients.length == 0)">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Unassociated Clients</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>MAC</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="client in unassociatedClients">
+                            <td class="autoselect">
+                                {{ client }}
+                                <hook-button hook="mac" content="client" probes="true"></hook-button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
