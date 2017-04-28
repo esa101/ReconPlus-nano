@@ -22,6 +22,10 @@ class ReconPlus extends SystemModule
             case 'deleteData':
                 $this->deleteData();
                 break;
+
+            case 'deletePData':
+                $this->deletePData();
+                break;
         }
     }
 
@@ -75,6 +79,8 @@ class ReconPlus extends SystemModule
                     )
                 );
                 if (empty(exec("ps | grep [r]econc"))) {
+                    exec("cp /pineapple/modules/ReconPlus/log/clientlist.txt /pineapple/modules/ReconPlus/log/clientlist.bak");
+                    exec("cp /pineapple/modules/ReconPlus/log/reconlog /pineapple/modules/ReconPlus/log/reconlog.bak");
                     $cmd = "python /pineapple/modules/ReconPlus/script/reconcombine.py -i /tmp/recon-{$this->request->scanID} -o /pineapple/modules/ReconPlus/log/clientlist.txt > /pineapple/modules/ReconPlus/log/reconlog";
                     exec("echo '{$cmd}' | at now");
                     }
@@ -84,6 +90,7 @@ class ReconPlus extends SystemModule
                 if ($scanID >= 10) {
                     $pid = exec("ps | grep /tmp/recon-{$scanID} | grep -v grep | awk '{print $1}'");
                     exec("kill -SIGALRM {$pid}");
+                    exec("echo 'error' > /tmp/reconerror");
                 }
             }
         }
@@ -133,5 +140,12 @@ class ReconPlus extends SystemModule
         exec("rm /pineapple/modules/ReconPlus/log/reconlog");
         exec("rm /pineapple/modules/ReconPlus/log/clientlist.txt");
     }
+
+    private function deletePData()
+    {
+        exec("cp /pineapple/modules/ReconPlus/log/clientlist.bak /pineapple/modules/ReconPlus/log/clientlist.txt");
+        exec("cp /pineapple/modules/ReconPlus/log/reconlog.bak /pineapple/modules/ReconPlus/log/reconlog");
+    }
+
 
 }

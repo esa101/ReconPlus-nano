@@ -50,6 +50,15 @@ registerController('ReconController', ['$api', '$scope', '$interval', '$timeout'
         });
     });
 
+    $scope.deletePData = (function() {
+        $api.request({
+            module: 'ReconPlus',
+            action: 'deletePData',
+        }, function() {
+            $scope.getConfigurationData(0,"");
+        });
+    });
+
 
     function checkScanStatus(id) {
         $scope.checkScanInterval = $interval(function() {

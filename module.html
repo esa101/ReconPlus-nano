@@ -8,8 +8,9 @@
                 <div class="panel-body">
                     <form class="form-horizontal">
                         <span class="input-group-btn">
-                            <button type="submit" class="btn btn-default" ng-click="getConfigurationData()">Refresh</button>
-                            <button type="submit" class="btn btn-default pull-right" ng-click="deleteData()">Reset previous scan results</button>
+                            <button type="submit" class="btn btn-default pull-left" ng-click="getConfigurationData()">Refresh</button>
+                            <button type="submit" class="btn btn-default" ng-click="deletePData()">Undo</button>
+                            <button type="submit" class="btn btn-default pull-right" ng-click="deleteData()">Delete all scan results</button>
                         </span>
                         <textarea class="form-control" rows="20" ng-model="configurationData" ng-model-options="{debounce: 1000}">
                         </textarea>
