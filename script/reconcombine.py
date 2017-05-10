@@ -25,11 +25,73 @@ def main(argv):
 	#print 'Recon Input file is ', inputfile
 	#print 'Output file is located at', outputfile
 
-	with open(inputfile) as data_file:    
+
+	uniqueSSID = set()
+	timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+	with open('/tmp/probe-' + inputfile) as f:    
+
+		for line in f:
+			line = line.strip("\n")
+			if line != '':
+				ssid = line.split(' ')[19].strip("(").strip(")")
+				if ssid !='':
+					ssid = ssid + '\t' + timestamp
+					uniqueSSID.add(ssid)
+			
+
+	clientfile = open('/pineapple/modules/ReconPlus/log/probelist.txt', 'a+')
+	for i in uniqueSSID:
+		txt = i + '\n'
+		clientfile.write(txt)
+	clientfile.close()			
+
+	#read the clientlist file and find targets who appeared
+	#at different timestamp
+	clientlist = {}
+	maclist = []
+	uniqueMac = set()
+	datapoint = set()
+	suspectMac = set()
+	count = 0
+	with open('/pineapple/modules/ReconPlus/log/probelist.txt') as f:
+			for line in f:
+					line = line.strip("\n")
+					mac,time = line.split('\t')
+					clientlist[mac] = time
+					maclist.append(mac)
+					uniqueMac.add(mac)
+					datapoint.add(time)
+					count = count + 1
+
+	#for i in clientlist:
+	#        print i, clientlist[i]
+	print("========================")
+	print("=Comparison using SSID =")
+	print("========================")
+	for i in uniqueMac:
+			#print str(maclist.count(i)) + "\n"
+			if maclist.count(i) > 1:
+					print str(maclist.count(i)) + " instant of SSID ; " + i
+			suspectMac.add(i)
+
+	print("\n SSID List: ")
+	for i in suspectMac:
+		print i
+
+	print("\n Summary: ")
+	print("Using data from " + str(len(datapoint)) + " distinct scan\n")
+
+
+
+
+
+
+
+	with open('/tmp/recon-' + inputfile) as data_file:    
 		data = json.load(data_file)
 
 	clients = {}
-	timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 	for y in data['ap_list']:
 		if y['clients']:
@@ -48,7 +110,6 @@ def main(argv):
 		txt = y + '\t' + sortedClients[y] + '\n'
 		clientfile.write(txt)
 	clientfile.close()
-
 
 	#read the clientlist file and find targets who appeared
 	#at different timestamp
@@ -70,7 +131,9 @@ def main(argv):
 
 	#for i in clientlist:
 	#        print i, clientlist[i]
-
+	print("\n===============================")	
+	print("=Comparison using MAC Address =")
+	print("===============================")
 	for i in uniqueMac:
 			#print str(maclist.count(i)) + "\n"
 			if maclist.count(i) > 1:
