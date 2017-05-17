@@ -53,13 +53,8 @@ class ReconPlus extends SystemModule
 
     private function scan($duration, $type)
     {
-        $cmd = "tcpdump -i {$this->clientInterface}mon -e -s 256 type mgt subtype probe-req > /tmp/probe-{$this->scanID}";
-        exec("echo '{$cmd}' | at now");
-        sleep(1);
-
-        $cmd0 = "pinesniffer {$this->clientInterface}mon {$duration} {$type} /tmp/recon-{$this->scanID} >> /tmp/reconerror";
         $cmd = "pinesniffer {$this->clientInterface}mon {$duration} {$type} /tmp/recon-{$this->scanID}";
-        exec("echo '{$cmd0}' | at now");
+        exec("echo '{$cmd}' | at now");
         sleep(1);
         return $this->checkRunning($cmd);
     }
@@ -85,40 +80,17 @@ class ReconPlus extends SystemModule
                 );
                 if (empty(exec("ps | grep [r]econc"))) {
                     exec("cp /pineapple/modules/ReconPlus/log/clientlist.txt /pineapple/modules/ReconPlus/log/clientlist.bak");
-                    exec("cp /pineapple/modules/ReconPlus/log/probelist.txt /pineapple/modules/ReconPlus/log/probelist.bak");                    
                     exec("cp /pineapple/modules/ReconPlus/log/reconlog /pineapple/modules/ReconPlus/log/reconlog.bak");
-
-                    exec("killall tcpdump");
-
-                    //$cmd = "python /pineapple/modules/ReconPlus/script/probecombine.py -i /tmp/probe-{$this->request->scanID} -o /pineapple/modules/ReconPlus/log/probelist.txt > /pineapple/modules/ReconPlus/log/reconlog";
-                    //exec("echo '{$cmd}' | at now");
-
-                    $cmd = "python /pineapple/modules/ReconPlus/script/reconcombine.py -i {$this->request->scanID} -o /pineapple/modules/ReconPlus/log/clientlist.txt > /pineapple/modules/ReconPlus/log/reconlog";
+                    $cmd = "python /pineapple/modules/ReconPlus/script/reconcombine.py -i /tmp/recon-{$this->request->scanID} -o /pineapple/modules/ReconPlus/log/clientlist.txt > /pineapple/modules/ReconPlus/log/reconlog";
                     exec("echo '{$cmd}' | at now");
                     }
                 return;
-            } 
-            elseif (isset($this->request->percent) && $this->request->percent > 30){
-                if (empty(exec("ps | grep [p]inesniffer")))
-                {
-                        exec("echo 'mid point error' >> /tmp/reconerror");
-                        exec("killall tcpdump");
-                        $this->response = array("error" => true);
-                        return;                  
-                }
-            }
-            elseif (isset($this->request->percent) && $this->request->percent == 100) {
+            } elseif (isset($this->request->percent) && $this->request->percent == 100) {
                 $scanID = intval($this->request->scanID);
                 if ($scanID >= 10) {
                     $pid = exec("ps | grep /tmp/recon-{$scanID} | grep -v grep | awk '{print $1}'");
                     exec("kill -SIGALRM {$pid}");
-                    if (empty($pid)) {
-                        //recon 100% stuck error. Likely due to pinesniffer abrupt exit without producting /tmp/recon-id file
-                        exec("echo 'empty pid' >> /tmp/reconerror");
-                        exec("killall tcpdump");
-                        $this->response = array("error" => true);
-                        return;
-                    }
+                    exec("echo 'error' > /tmp/reconerror");
                 }
             }
         }
@@ -167,13 +139,11 @@ class ReconPlus extends SystemModule
     {
         exec("rm /pineapple/modules/ReconPlus/log/reconlog");
         exec("rm /pineapple/modules/ReconPlus/log/clientlist.txt");
-        exec("rm /pineapple/modules/ReconPlus/log/probelist.txt");        
     }
 
     private function deletePData()
     {
         exec("cp /pineapple/modules/ReconPlus/log/clientlist.bak /pineapple/modules/ReconPlus/log/clientlist.txt");
-        exec("cp /pineapple/modules/ReconPlus/log/probelist.bak /pineapple/modules/ReconPlus/log/probelist.txt");        
         exec("cp /pineapple/modules/ReconPlus/log/reconlog.bak /pineapple/modules/ReconPlus/log/reconlog");
     }
 
