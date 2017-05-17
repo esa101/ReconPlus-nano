@@ -1,7 +1,7 @@
 registerController('ReconController', ['$api', '$scope', '$interval', '$timeout', function($api, $scope, $interval, $timeout) {
 
     $scope.error = false;
-
+    $scope.error2 = false;
     $scope.accessPoints = [];
     $scope.unassociatedClients = [];
     $scope.interfaceMacs = [];
@@ -69,11 +69,20 @@ registerController('ReconController', ['$api', '$scope', '$interval', '$timeout'
                 percent: $scope.percent
 
             }, function(response) {
-                if (response.completed === true) {
+
+                if (response.error) {
+                    //alert('error');
+                    $scope.percent = 0;
+                    $scope.stopScan(true);
+                    $scope.error2 = true;                    
+                }
+                else if (response.completed === true) {
+                    //alert('completed');
                     $scope.percent = 100;
                     parseScanResults(response);
                     $scope.stopScan(true);
                 } else {
+                    //alert('updating');
                     var percentage = Math.ceil(100 / ((($scope.scanDuration*1) + 2) / 5));
                     if ($scope.percent + percentage > 100) {
                         $scope.percent = 100;

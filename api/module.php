@@ -96,12 +96,28 @@ class ReconPlus extends SystemModule
                     exec("echo '{$cmd}' | at now");
                     }
                 return;
-            } elseif (isset($this->request->percent) && $this->request->percent == 100) {
+            } 
+            elseif (isset($this->request->percent) && $this->request->percent > 30){
+                if (empty(exec("ps | grep [p]inesniffer")))
+                {
+                        exec("echo 'mid point error' > /tmp/reconerror");
+                        exec("killall tcpdump");
+                        $this->response = array("error" => true);
+                        return;                  
+                }
+            }
+            elseif (isset($this->request->percent) && $this->request->percent == 100) {
                 $scanID = intval($this->request->scanID);
                 if ($scanID >= 10) {
                     $pid = exec("ps | grep /tmp/recon-{$scanID} | grep -v grep | awk '{print $1}'");
                     exec("kill -SIGALRM {$pid}");
-                    exec("echo 'error' > /tmp/reconerror");
+                    if (empty($pid)) {
+                        //recon 100% stuck error. Likely due to pinesniffer abrupt exit without producting /tmp/recon-id file
+                        exec("echo 'empty pid' > /tmp/reconerror");
+                        exec("killall tcpdump");
+                        $this->response = array("error" => true);
+                        return;
+                    }
                 }
             }
         }

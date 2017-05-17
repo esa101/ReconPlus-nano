@@ -29,6 +29,8 @@
                     <form class="form-inline" ng-submit="startScan()">
                         <div class="form-group">
                             <label class="radio-inline padding-left"><input type="radio" ng-model="scanType" value="0" ng-disabled="running">2.4GHz</label>
+                            <label class="radio-inline"><input type="radio" ng-model="scanType" value="1" ng-disabled="running">5GHz</label>
+                            <label class="radio-inline"><input type="radio" ng-model="scanType" value="2" ng-disabled="running">Both</label>
                             <br />
                             <label class="checkbox-inline padding-left">
                                 <input type="checkbox" ng-model="continuous" ng-disabled="running">
@@ -64,6 +66,9 @@
                             <div class="well well-sm alert-danger" ng-show="error">There was an error starting Recon.
                                 Please try again.
                             </div>
+                            <div class="well well-sm alert-danger" ng-show="error2">There was an error with Recon.
+                                Please try again.
+                            </div>                            
                         </div>
                     </form>
                 </div>
