@@ -57,8 +57,9 @@ class ReconPlus extends SystemModule
         exec("echo '{$cmd}' | at now");
         sleep(1);
 
+        $cmd0 = "pinesniffer {$this->clientInterface}mon {$duration} {$type} /tmp/recon-{$this->scanID} >> /tmp/reconerror";
         $cmd = "pinesniffer {$this->clientInterface}mon {$duration} {$type} /tmp/recon-{$this->scanID}";
-        exec("echo '{$cmd}' | at now");
+        exec("echo '{$cmd0}' | at now");
         sleep(1);
         return $this->checkRunning($cmd);
     }
@@ -113,7 +114,7 @@ class ReconPlus extends SystemModule
                     exec("kill -SIGALRM {$pid}");
                     if (empty($pid)) {
                         //recon 100% stuck error. Likely due to pinesniffer abrupt exit without producting /tmp/recon-id file
-                        exec("echo 'empty pid' > /tmp/reconerror");
+                        //exec("echo 'empty pid' > /tmp/reconerror");
                         exec("killall tcpdump");
                         $this->response = array("error" => true);
                         return;
