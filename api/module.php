@@ -90,11 +90,17 @@ class ReconPlus extends SystemModule
 
                     exec("killall tcpdump");
 
-                    //$cmd = "python /pineapple/modules/ReconPlus/script/probecombine.py -i /tmp/probe-{$this->request->scanID} -o /pineapple/modules/ReconPlus/log/probelist.txt > /pineapple/modules/ReconPlus/log/reconlog";
-                    //exec("echo '{$cmd}' | at now");
+                    if ($this->request->intruder){
+                        exec("echo 'intruder mode activated' >> /tmp/reconerror");
+                        $cmd = "python /pineapple/modules/ReconPlus/script/reconcombine.py -i {$this->request->scanID} -o /pineapple/modules/ReconPlus/log/clientlist.txt -m 1 -t {$this->request->threshold} > /pineapple/modules/ReconPlus/log/reconlog";
+                        exec("echo '{$cmd}' | at now");                        
+                    } else{
+                        exec("echo 'intruder mode activated' >> /tmp/reconerror");
+                        $cmd = "python /pineapple/modules/ReconPlus/script/reconcombine.py -i {$this->request->scanID} -o /pineapple/modules/ReconPlus/log/clientlist.txt -m 0 -t {$this->request->threshold} > /pineapple/modules/ReconPlus/log/reconlog";
+                        exec("echo '{$cmd}' | at now");                           
+                    }
 
-                    $cmd = "python /pineapple/modules/ReconPlus/script/reconcombine.py -i {$this->request->scanID} -o /pineapple/modules/ReconPlus/log/clientlist.txt > /pineapple/modules/ReconPlus/log/reconlog";
-                    exec("echo '{$cmd}' | at now");
+
                     }
                 return;
             } 

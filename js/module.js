@@ -14,6 +14,8 @@ registerController('ReconController', ['$api', '$scope', '$interval', '$timeout'
     $scope.configurationData = '';
     $scope.loading = false;
     $scope.cached = false;
+    $scope.intruder = false;
+    $scope.threshold = 0;
 
     if (window.recon_cache !== undefined) {
         $scope.cached = true;
@@ -66,6 +68,8 @@ registerController('ReconController', ['$api', '$scope', '$interval', '$timeout'
                 module: 'ReconPlus',
                 action: 'scanStatus',
                 scanID: id,
+                intruder: $scope.intruder,
+                threshold: $scope.threshold,
                 percent: $scope.percent
 
             }, function(response) {
@@ -105,6 +109,7 @@ registerController('ReconController', ['$api', '$scope', '$interval', '$timeout'
             $scope.loading = false;
             if (response.success) {
                 $scope.error = false;
+                $scope.error2 = false;
                 $scope.running = true;
                 checkScanStatus(response.scanID);
             } else {

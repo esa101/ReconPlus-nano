@@ -7,6 +7,22 @@
                 </div>
                 <div class="panel-body">
                     <form class="form-horizontal">
+                    <div class="form-group">
+                        <label class="checkbox-inline padding-left">
+                            <input type="checkbox" ng-model="intruder">
+                           Report Intruder
+                        </label>                        
+                        <select class="form-control" ng-model="threshold" ng-show="intruder">
+                            <option value="2">Appeared at least 2 times</option>
+                            <option value="3">Appeared at least 3 times</option>
+                            <option value="4">Appeared at least 4 times</option>
+                            <option value="5">Appeared at least 5 times</option>
+                            <option value="6">Appeared at least 6 times</option>
+                            <option value="7">Appeared at least 7 times</option>
+                            <option value="8">Appeared at least 8 times</option>
+                            <option value="9">Appeared at least 9 times</option>
+                        </select>           
+                    </div>             
                         <span class="input-group-btn">
                             <button type="submit" class="btn btn-default pull-left" ng-click="getConfigurationData()">Refresh</button>
                             <button type="submit" class="btn btn-default" ng-click="deletePData()">Undo</button>

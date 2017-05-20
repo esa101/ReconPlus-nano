@@ -9,10 +9,14 @@ from collections import OrderedDict
 def main(argv):
 	inputfile = ''
 	outputfile = '/tmp/clientlist.txt'
+	#mode == 0 represents intruder mode is turned off
+	#mode == 1 represents intruder mode is turned on
+	mode = '0'
+	threshold = 0
 	try:
-		opts, args = getopt.getopt(argv,"hi:o:",["ifile=","ofile="])
+		opts, args = getopt.getopt(argv,"hi:o:m:t:",["ifile=","ofile=","mode=","threshold="])
 	except getopt.GetoptError:
-		print 'test.py -i <inputfile> -o <outputfile>'
+		print 'test.py -i <inputfile> -o <outputfile> -m <intruder mode>, -t <threshold>'
 		sys.exit(2)
 	for opt, arg in opts:
 		if opt == '-h':
@@ -21,7 +25,11 @@ def main(argv):
 		elif opt in ("-i", "--ifile"):
 			inputfile = arg
 		elif opt in ("-o", "--ofile"):
-				outputfile = arg
+			outputfile = arg
+		elif opt in ("-m", "--mode"):
+			mode = arg			
+		elif opt in ("-t", "--threshold"):
+			threshold = arg					
 	#print 'Recon Input file is ', inputfile
 	#print 'Output file is located at', outputfile
 
@@ -53,6 +61,7 @@ def main(argv):
 	uniqueMac = set()
 	datapoint = set()
 	suspectMac = set()
+	safeMac = set()
 	count = 0
 	with open('/pineapple/modules/ReconPlus/log/probelist.txt') as f:
 			for line in f:
@@ -66,26 +75,22 @@ def main(argv):
 
 	#for i in clientlist:
 	#        print i, clientlist[i]
-	print("========================")
-	print("=Comparison using SSID =")
-	print("========================")
-	for i in uniqueMac:
-			#print str(maclist.count(i)) + "\n"
-			if maclist.count(i) > 1:
-					print str(maclist.count(i)) + " instant of SSID ; " + i
-			suspectMac.add(i)
+	if mode == '0':
+		print("========================")
+		print("=Comparison using SSID =")
+		print("========================")
+		for i in uniqueMac:
+				#print str(maclist.count(i)) + "\n"
+				if maclist.count(i) > 1:
+						print str(maclist.count(i)) + " instant of SSID ; " + i
+				suspectMac.add(i)
 
-	print("\n SSID List: ")
-	for i in suspectMac:
-		print i
+		print("\n SSID List: ")
+		for i in suspectMac:
+			print i
 
-	print("\n Summary: ")
-	print("Using data from " + str(len(datapoint)) + " distinct scan\n")
-
-
-
-
-
+		print("\n Summary: ")
+		print("Using data from " + str(len(datapoint)) + " distinct scan\n")
 
 
 	with open('/tmp/recon-' + inputfile) as data_file:    
@@ -131,22 +136,42 @@ def main(argv):
 
 	#for i in clientlist:
 	#        print i, clientlist[i]
-	print("\n===============================")	
-	print("=Comparison using MAC Address =")
-	print("===============================")
-	for i in uniqueMac:
-			#print str(maclist.count(i)) + "\n"
-			if maclist.count(i) > 1:
+	if mode == '0':	
+		print("\n===============================")	
+		print("=Comparison using MAC Address =")
+		print("===============================")
+		for i in uniqueMac:
+				#print str(maclist.count(i)) + "\n"
+				if maclist.count(i) > 1:
+						print str(maclist.count(i)) + " instant of MAC address; " + i
+				suspectMac.add(i)
+
+		print("\n Suspect List: ")
+		for i in suspectMac:
+			print i
+
+		print("\n Summary: ")
+		print("\n" + str(count) + " MAC address scanned")
+		print("Using data from " + str(len(datapoint)) + " distinct scan\n")
+
+	if mode == '1':	
+		print("MAC Addresses who appeared at least " + str(threshold) + " time(s) are considered safe")
+		print("Suspicious MAC Addresses are listed below:\n")
+		for i in uniqueMac:
+				#print str(maclist.count(i)) + "\n"
+				if maclist.count(i) < int(threshold):
 					print str(maclist.count(i)) + " instant of MAC address; " + i
-			suspectMac.add(i)
+					suspectMac.add(i)
+				else:
+					safeMac.add(i)					
 
-	print("\n Suspect List: ")
-	for i in suspectMac:
-		print i
+		print("\n Suspect List: ")
+		for i in suspectMac:
+			print i
 
-	print("\n Summary: ")
-	print("\n" + str(count) + " MAC address scanned")
-	print("Using data from " + str(len(datapoint)) + " distinct scan\n")
+		print("\n Safe List: ")
+		for i in safeMac:
+			print i			
 
 
 if __name__ == "__main__":
