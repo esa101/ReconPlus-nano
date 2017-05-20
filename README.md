@@ -16,4 +16,6 @@ New in version 3.0:
 SSID tracking
 New in version 3.1:
 Fixed 100% recon stuck error
+New in version 4.0:
+Intruder mode
 
